@@ -1,6 +1,5 @@
 package com.paymentAPI.paypal_integration_api.config.paypal;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +9,6 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
-import com.paypal.base.exception.PayPalException;
 import com.paypal.base.rest.PayPalRESTException;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,7 @@ public class PaypalController {
 	@GetMapping("/")
 	public String home() {
 
-		return "";
+		return "index";
 	}
 
 	@PostMapping("/payment/create")
@@ -46,8 +44,7 @@ public class PaypalController {
 			}
 
 		} catch (PayPalRESTException e) {
-			log.error("message", e);
-
+			log.error("Error Ocurred: ", e);
 		}
 
 		return new RedirectView("/payment/error");
@@ -62,7 +59,7 @@ public class PaypalController {
 			if (payment.getState().equals("approved")) {
 				return "paymentSucess";
 			}
-		} catch (PayPalException e) {
+		} catch (PayPalRESTException e) {
 			log.error("Error Ocurred: ", e);
 		}
 
