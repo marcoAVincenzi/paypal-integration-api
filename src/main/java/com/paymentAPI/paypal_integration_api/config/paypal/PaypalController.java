@@ -1,6 +1,7 @@
 package com.paymentAPI.paypal_integration_api.config.paypal;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,13 +29,14 @@ public class PaypalController {
 	}
 
 	@PostMapping("/payment/create")
-	public RedirectView createPayment() {
+	public RedirectView createPayment(@RequestParam("method") String method, @RequestParam("amount") String amount,
+			@RequestParam("currency") String currency, @RequestParam("description") String description) {
 
 		try {
 			String cancelUrl = "https://localhost:8080/payment/cancel";
 			String successUrl = "https://localhost:8080/payment/success";
 
-			Payment payment = paypalService.createPayment(10.0, "USD", "paypal", "sale", "Payment description",
+			Payment payment = paypalService.createPayment(Double.valueOf(amount), currency, method, "sale", description,
 					cancelUrl, successUrl);
 
 			for (Links links : payment.getLinks()) {
@@ -44,14 +46,14 @@ public class PaypalController {
 			}
 
 		} catch (PayPalRESTException e) {
-			log.error("Error Ocurred: ", e);
+			return new RedirectView("/payment/error");
 		}
 
 		return new RedirectView("/payment/error");
 	}
 
 	@GetMapping("/payment/sucess")
-	public String paymentSucess(@RequestParam("paymentId") String paymentId, @RequestParam("payerId") String payerId) {
+	public String paymentSucess(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId) {
 
 		try {
 			Payment payment = paypalService.executePayment(paymentId, payerId);
@@ -60,7 +62,7 @@ public class PaypalController {
 				return "paymentSucess";
 			}
 		} catch (PayPalRESTException e) {
-			log.error("Error Ocurred: ", e);
+			
 		}
 
 		return "paymentSucess";
